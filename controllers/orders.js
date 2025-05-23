@@ -6,10 +6,10 @@ const CreateOrder = (req, res) => {
   const { shipping_status, user_id } = req.body;
 
   pool
-    .query(`INSERT INTO orders (shipping_status , user_id) VALUES ($1 , $2) RETURNING *`, [
-      shipping_status,
-      user_id,
-    ])
+    .query(
+      `INSERT INTO orders (shipping_status , user_id) VALUES ($1 , $2) RETURNING *`,
+      [shipping_status, user_id]
+    )
     .then((result) => {
       res.status(201).json({
         success: true,
@@ -18,11 +18,37 @@ const CreateOrder = (req, res) => {
       });
     })
     .catch((err) => {
-        res.status(500).json({
+      res.status(500).json({
         success: false,
         message: "Server Error",
       });
     });
 };
 
-module.exports = {CreateOrder};
+const UpdateShippingStatus = (req, res) => {
+  const { id } = req.params;
+  const { shipping_status } = req.body;
+  const time = new Date().toISOString();
+
+  pool
+    .query(
+      `UPDATE orders SET shipping_status = $1 , shipping_date = $2 WHERE id = $3 RETURNING *`,
+      [shipping_status, time, id]
+    )
+    .then((result) => {
+      res.status(201).json({
+        success: true,
+        message: "The shipping status has been updated successfully",
+        orders: result.rows,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err.message,
+      });
+    });
+};
+
+module.exports = { CreateOrder, UpdateShippingStatus };
