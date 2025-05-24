@@ -35,7 +35,7 @@ const UpdateQuantity = (req, res) => {
       id,
     ])
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         message: "The quantity has been updated successfully",
         orders: result.rows,
@@ -56,7 +56,7 @@ const DeleteOrderItem = (req, res) => {
   pool
     .query(`DELETE FROM order_items WHERE id = $1 RETURNING *`, [id])
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         message: "The order items has been deleted successfully",
         orders: result.rows,
@@ -83,7 +83,7 @@ FULL OUTER JOIN products ON order_items.product_id = products.id) WHERE orders.u
       [user_id]
     )
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         message: `Get All the Orders Items for ${user_id}`,
         orders: result.rows,
@@ -105,7 +105,7 @@ const GetOrderItemsByPriceOrdered = (req, res) => {
        ON order_items.product_id = products.id  ORDER BY total_price DESC `
     )
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         message: `Get All the Orders Items ordered by total price as DESC`,
         orders: result.rows,
@@ -120,11 +120,49 @@ const GetOrderItemsByPriceOrdered = (req, res) => {
     });
 };
 
+const GetAllPopularProductIdCompleted = (req, res) => {
+  pool
+    .query(
+      `SELECT COUNT (product_id) , products.title FROM order_items INNER JOIN 
+      orders ON order_items.order_id = orders.id  INNER JOIN products ON order_items.product_id = products.id
+      WHERE orders.shipping_status = (SELECT shipping_status FROM orders WHERE shipping_status = 'completed' LIMIT 1) GROUP BY product_id  , products.title LIMIT 3  `
+    )
+    .then((result) => {
+      res.status(200).json({
+        success: true,
+        message: `Get All the  popular product id that shipping status is completed`,
+        orders: result.rows,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err,
+      });
+    });
+};
 
-
-
-
-
+const GetBestProductByTotalPrice = (req, res) => {
+  pool
+    .query(
+      `SELECT MAX(products.price * order_items.quantity) AS total_price , products.title from order_items INNER JOIN products ON order_items.product_id = products.id  INNER JOIN orders ON order_items.order_id = orders.id  WHERE orders.shipping_status = 'completed' GROUP BY products.title ORDER BY total_price DESC LIMIT 1`
+    )
+    .then((result) => {
+      res.status(200).json({
+        success: true,
+        message: `Get All the  best sold product depending on total price and shipping status is completed`,
+        orders: result.rows,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err,
+      });
+    });
+};
 
 module.exports = {
   CreateOrderItems,
@@ -132,4 +170,6 @@ module.exports = {
   DeleteOrderItem,
   RetrieveAllOrderItemsByUser,
   GetOrderItemsByPriceOrdered,
+  GetAllPopularProductIdCompleted,
+  GetBestProductByTotalPrice
 };
