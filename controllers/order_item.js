@@ -62,11 +62,52 @@ const DeleteOrderItem = (req, res) => {
         orders: result.rows,
       });
     })
-    .catch((err) => {res.status(500).json({
+    .catch((err) => {
+      res.status(500).json({
         success: false,
         message: "Server Error",
         err: err.message,
-      });});
+      });
+    });
 };
 
-module.exports = { CreateOrderItems, UpdateQuantity , DeleteOrderItem};
+const RetrieveAllOrderItemsByUser = (req, res) => {
+  const { user_id } = req.params;
+  pool
+    .query(
+      `SELECT order_items.id , order_items.quantity , products.title , products.price,
+orders.user_id , products.price * order_items.quantity AS total_price FROM ((order_items
+FULL OUTER JOIN orders ON orders.id = order_items.order_id)
+FULL OUTER JOIN products ON order_items.product_id = products.id) WHERE orders.user_id = $1;
+`,
+      [user_id]
+    )
+    .then((result) => {
+      res.status(201).json({
+        success: true,
+        message: `Get All the Orders Items for ${user_id}`,
+        orders: result.rows,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err.message,
+      });
+    });
+};
+
+
+
+
+
+
+
+
+module.exports = {
+  CreateOrderItems,
+  UpdateQuantity,
+  DeleteOrderItem,
+  RetrieveAllOrderItemsByUser,
+};

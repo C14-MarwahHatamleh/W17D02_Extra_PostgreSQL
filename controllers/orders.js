@@ -51,4 +51,27 @@ const UpdateShippingStatus = (req, res) => {
     });
 };
 
-module.exports = { CreateOrder, UpdateShippingStatus };
+const GetAllOrdersSorted = (req, res) => {
+  pool
+    .query(
+      `SELECT COUNT(orders.user_id) AS orders ,  users.firstName from orders FULL OUTER JOIN users
+       ON orders.user_id = users.id 
+      WHERE shipping_status  = 'completed' GROUP BY orders.user_id , users.firstName ORDER BY orders DESC`
+    )
+    .then((result) => {
+      res.status(201).json({
+        success: true,
+        message: "Get All orders for Users and ordered as DESC",
+        orders: result.rows,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err.message,
+      });
+    });
+};
+
+module.exports = { CreateOrder, UpdateShippingStatus, GetAllOrdersSorted };
