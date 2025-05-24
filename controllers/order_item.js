@@ -98,6 +98,27 @@ FULL OUTER JOIN products ON order_items.product_id = products.id) WHERE orders.u
     });
 };
 
+const GetOrderItemsByPriceOrdered = (req, res) => {
+  pool
+    .query(
+      `SELECT products.price * order_items.quantity AS total_price from order_items INNER JOIN products
+       ON order_items.product_id = products.id  ORDER BY total_price DESC `
+    )
+    .then((result) => {
+      res.status(201).json({
+        success: true,
+        message: `Get All the Orders Items ordered by total price as DESC`,
+        orders: result.rows,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err,
+      });
+    });
+};
 
 
 
@@ -110,4 +131,5 @@ module.exports = {
   UpdateQuantity,
   DeleteOrderItem,
   RetrieveAllOrderItemsByUser,
+  GetOrderItemsByPriceOrdered,
 };

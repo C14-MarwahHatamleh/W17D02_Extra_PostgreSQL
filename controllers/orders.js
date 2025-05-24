@@ -81,7 +81,7 @@ const DeleteOrdersByShippingStatus = async (req, res) => {
 
   if (result.rows[0].shipping_status === "completed") {
     const OrderHardDeleteOrder = `UPDATE  orders  SET is_deleted  = $1 WHERE id = $2 RETURNING *`;
-    const result = await pool.query(OrderHardDeleteOrder, [1 , id]);
+    const result = await pool.query(OrderHardDeleteOrder, [1, id]);
     if (result) {
       res.status(200).json({
         success: true,
@@ -110,9 +110,31 @@ const DeleteOrdersByShippingStatus = async (req, res) => {
         message: "Server Error",
         err: err.message,
       });
-  }
+    }
   }
   //console.log(result.rows[0].shipping_status);
+};
+
+const GetAllTopUsersByTotalPrice = (req, res) => {
+  pool
+    .query(
+      `SELECT users.firstName ,products.price * order_items.quantity AS total_price  from order_items 
+     INNER JOIN products ON order_items.product_id = products.id INNER JOIN orders ON order_items.order_id = orders.id INNER JOIN users ON users.id = orders.user_id ORDER BY total_price DESC LIMIT 3`
+    )
+    .then((result) => {
+      res.status(200).json({
+        success: true,
+        message: "The Order has been deleted ",
+        orders: result.rows,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err.message,
+      });
+    });
 };
 
 module.exports = {
@@ -120,4 +142,5 @@ module.exports = {
   UpdateShippingStatus,
   GetAllOrdersSorted,
   DeleteOrdersByShippingStatus,
+  GetAllTopUsersByTotalPrice
 };
