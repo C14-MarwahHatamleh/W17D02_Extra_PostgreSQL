@@ -81,7 +81,7 @@ const updateProduct = (req, res) => {
     });
 };
 
-const GetCountOfProducts = (req, res) => {
+const GetCountOfCategories = (req, res) => {
   pool
     .query(`SELECT COUNT (category) , category FROM products GROUP BY category`)
     .then((result) => {return res.status(201).json({
@@ -100,5 +100,5 @@ module.exports = {
   addProduct,
   getAllProducts,
   updateProduct,
-  GetCountOfProducts
+  GetCountOfCategories
 };

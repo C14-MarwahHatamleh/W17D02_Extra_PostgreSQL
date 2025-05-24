@@ -3,7 +3,7 @@ const {
   addProduct,
   getAllProducts,
   updateProduct,
-  GetCountOfProducts,
+  GetCountOfCategories,
 } = require("../controllers/product");
 
 const productRouter = express.Router();
@@ -11,7 +11,7 @@ const productRouter = express.Router();
 productRouter.post("/", addProduct);
 productRouter.get("/", getAllProducts);
 productRouter.put("/:product_id", updateProduct);
-productRouter.get("/counts", GetCountOfProducts);
+productRouter.get("/counts", GetCountOfCategories);
 
 /*
 ** For test 
