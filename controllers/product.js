@@ -28,41 +28,41 @@ const addProduct = (req, res) => {
     });
 };
 const getAllProducts = (req, res) => {
-    const query = "SELECT * FROM products";
-  
-    pool
-      .query(query)
-      .then((result) => {
-        if (result.rows.length === 0) {
-          return res.status(404).json({
-            success: false,
-            message: "no products found",
-          });
-        } else {
-          res.status(200).json({
-            success: true,
-            message: "all products",
-            result: result.rows,
-          });
-        }
-      })
-      .catch((err) => {
-        res.status(400).json({
-          success: false,
-          message: "an error occurred",
-          err,
-        });
-      });
-  };
-  const updateProduct = (req, res) => {
-    const product_id = req.params.product_id;
+  const query = "SELECT * FROM products";
 
-    const { title, img, category, price } = req.body;
-    console.log("req.body",req.body);
-    const values = [title||null, img||null, category||null, price||null];
-    console.log("values",values);
-    const query = `UPDATE products SET title=COALESCE($1,title),category=COALESCE($2,category),img=COALESCE($3,img),price=COALESCE($4,price) WHERE id=$5 RETURNING *;`;
-    pool
+  pool
+    .query(query)
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "no products found",
+        });
+      } else {
+        res.status(200).json({
+          success: true,
+          message: "all products",
+          result: result.rows,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(400).json({
+        success: false,
+        message: "an error occurred",
+        err,
+      });
+    });
+};
+const updateProduct = (req, res) => {
+  const product_id = req.params.product_id;
+
+  const { title, img, category, price } = req.body;
+  console.log("req.body", req.body);
+  const values = [title || null, img || null, category || null, price || null];
+  console.log("values", values);
+  const query = `UPDATE products SET title=COALESCE($1,title),category=COALESCE($2,category),img=COALESCE($3,img),price=COALESCE($4,price) WHERE id=$5 RETURNING *;`;
+  pool
     .query(query, values)
     .then((result) => {
       if (result.rows.length) {
@@ -79,19 +79,26 @@ const getAllProducts = (req, res) => {
         .status(400)
         .json({ success: false, message: "something went wrong", err });
     });
+};
 
+const GetCountOfProducts = (req, res) => {
+  pool
+    .query(`SELECT COUNT (category) , category FROM products GROUP BY category`)
+    .then((result) => {return res.status(201).json({
+          success: true,
+          massage: "Get a count by Category",
+          result: result.rows,
+        });})
+    .catch((err) => {
+      res
+        .status(400)
+        .json({ success: false, message: "something went wrong", err });[]
+    });
+};
 
-  }
-
-
-
-
-
-
-
-  module.exports = {
-    addProduct,
-    getAllProducts,
-    updateProduct
-  };
-  
+module.exports = {
+  addProduct,
+  getAllProducts,
+  updateProduct,
+  GetCountOfProducts
+};

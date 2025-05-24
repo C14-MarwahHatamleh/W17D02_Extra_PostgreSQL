@@ -74,4 +74,50 @@ const GetAllOrdersSorted = (req, res) => {
     });
 };
 
-module.exports = { CreateOrder, UpdateShippingStatus, GetAllOrdersSorted };
+const DeleteOrdersByShippingStatus = async (req, res) => {
+  const { id } = req.params;
+  const ShippingStatus = `SELECT shipping_status FROM orders WHERE id = $1`;
+  const result = await pool.query(ShippingStatus, [id]);
+
+  if (result.rows[0].shipping_status === "completed") {
+    const OrderHardDeleteOrder = `UPDATE  orders  SET is_deleted  = $1 WHERE id = $2 RETURNING *`;
+    const result = await pool.query(OrderHardDeleteOrder, [1 , id]);
+    if (result) {
+      res.status(200).json({
+        success: true,
+        message: "The is_deleted has been updated for Order ",
+        orders: result.rows,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err.message,
+      });
+    }
+  } else if (result.rows[0].shipping_status === "pending") {
+    const OrderHardDeleteOrder = `DELETE FROM orders WHERE id = $1 RETURNING *`;
+    const result = await pool.query(OrderHardDeleteOrder, [id]);
+    if (result) {
+      res.status(200).json({
+        success: true,
+        message: "The Order has been deleted ",
+        orders: result.rows,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Server Error",
+        err: err.message,
+      });
+  }
+  }
+  //console.log(result.rows[0].shipping_status);
+};
+
+module.exports = {
+  CreateOrder,
+  UpdateShippingStatus,
+  GetAllOrdersSorted,
+  DeleteOrdersByShippingStatus,
+};

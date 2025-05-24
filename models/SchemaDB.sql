@@ -28,7 +28,7 @@ CREATE TABLE orders (
 id SERIAL NOT NULL,
 shipping_date TIMESTAMP DEFAULT NOW(),
 created_at  TIMESTAMP DEFAULT NOW(),
-shipping_status VARCHAR(255) DEFAULT "pending",
+LOWER(shipping_status) VARCHAR(255) DEFAULT "pending",
  user_id INT,
 FOREIGN KEY (user_id) REFERENCES users(id),
 is_deleted SMALLINT DEFAULT 0,
